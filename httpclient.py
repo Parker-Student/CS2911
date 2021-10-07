@@ -222,26 +222,41 @@ def send_return_message():
     :author: Parker Foord, Aidan Waterman
     """
 
+def read_size():
+    """
+    Reads the next bytes in a response until it runs into a new line, these bytes are the size
+    :return: size of the message following
+    :author: Aidan Waterman
+    """
+    size = b'\x00'
+    while True:
+        new_byte = next_byte()
+        if(new_byte == b'\x0d'):
+            next_byte()
+            return size
+        else:
+            size += new_byte
+
 def is_chunking():
     """
 
     :return:
     """
 
-    def next_byte(data_socket):
-        """
-        Read the next byte from the socket data_socket.
+def next_byte(data_socket):
+    """
+    Read the next byte from the socket data_socket.
 
-        Read the next byte from the sender, received over the network.
-        If the byte has not yet arrived, this method blocks (waits)
-          until the byte arrives.
-        If the sender is done sending and is waiting for your response, this method blocks indefinitely.
+    Read the next byte from the sender, received over the network.
+    If the byte has not yet arrived, this method blocks (waits)
+    until the byte arrives.
+    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
 
-        :param data_socket: The socket to read from. The data_socket argument should be an open tcp
+    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
                             data connection (either a client socket or a server data socket), not a tcp
                             server's listening socket.
-        :return: the next byte, as a bytes object with a single byte in it
-        """
-        return data_socket.recv(1)
+    :return: the next byte, as a bytes object with a single byte in it
+    """
+    return data_socket.recv(1)
 
 main()
