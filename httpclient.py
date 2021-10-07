@@ -172,13 +172,6 @@ def send_request():
     :author: Parker Foord, Aidan Waterman
     """
 
-def listen_for_response():
-    """
-
-    :return:
-    :author: Parker Foord, Aidan Waterman
-    """
-
 def get_header():
     """
 
@@ -211,12 +204,15 @@ def read_message():
     """
 
 
-def save_to_file():
+def save_to_file(file_name,content):
+    """
+    The method saves the message contents to a given filename
+    :author: Parker Foord
     """
 
-    :return:
-    :author: Parker Foord, Aidan Waterman
-    """
+    with open (file_name, 'w') as file:
+        file.write(content)
+
 
 
 def send_return_message():
