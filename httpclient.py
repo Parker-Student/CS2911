@@ -137,17 +137,17 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     :return: the status code
     :rtype: int
     """
-    create_socket(port)
-    send_request()
-    header = get_header()
+    (data_socket, address) = create_socket(port)
+    send_request(data_socket)
+    header = get_header(data_socket)
     if(is_chunking(header)):
        while True:
-           size = read_size()
+           size = read_size(data_socket)
            if(size==0):
                break
-           read_chunked_message()
+           read_chunked_message(data_socket)
     elif(not(is_chunking(header))):
-       size = read_size()
+       size = read_size(data_socket)
        read_message(size)
     else:
         # error message
@@ -158,21 +158,28 @@ def do_http_exchange(use_https, host, port, resource, file_name):
 # Define additional functions here as necessary
 # Don't forget docstrings and :author: tags
 
+
 def create_socket(port):
     """
 
     :return:
     :author: Parker Foord, Aidan Waterman
     """
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket.bind(('', port))
+    tcp_socket.listen(1)
+    return tcp_socket.accept()
 
-def send_request():
+
+def send_request(data_socket):
     """
 
     :return:
     :author: Parker Foord, Aidan Waterman
     """
 
-def get_header():
+
+def get_header(data_socket):
     """
 
     :return:
@@ -182,7 +189,8 @@ def get_header():
     read_key_value_lines()
     # read blank line
 
-def read_key_value_lines():
+
+def read_key_value_lines(data_socket):
     """
 
     :return:
@@ -190,14 +198,15 @@ def read_key_value_lines():
     """
 
 
-def read_chunked_message():
+def read_chunked_message(data_socket):
     """
 
     :return:
     :author: Parker Foord, Aidan Waterman
     """
 
-def read_message():
+
+def read_message(data_socket):
     """
 
     :return:
@@ -207,7 +216,7 @@ def read_message():
         new_byte = next_byte()
 
 
-def save_to_file(file_name,content):
+def save_to_file(file_name, content):
     """
     The method saves the message contents to a given filename
     :author: Parker Foord
@@ -217,15 +226,15 @@ def save_to_file(file_name,content):
         file.write(content)
 
 
-
-def send_return_message():
+def send_return_message(data_socket):
     """
 
     :return:
     :author: Parker Foord, Aidan Waterman
     """
 
-def read_size():
+
+def read_size(data_socket):
     """
     Reads the next bytes in a response until it runs into a new line, these bytes are the size
     :return: size of the message following
@@ -233,12 +242,13 @@ def read_size():
     """
     size = b'\x00'
     while True:
-        new_byte = next_byte()
+        new_byte = next_byte(data_socket)
         if(new_byte == b'\x0d'):
-            next_byte()
+            next_byte(data_socket)
             return size
         else:
             size += new_byte
+
 
 def is_chunking(header):
     """
@@ -246,6 +256,7 @@ def is_chunking(header):
     :return:
     """
     # read through bytes until it finds the chunking and returns true or false
+
 
 def next_byte(data_socket):
     """
@@ -262,5 +273,6 @@ def next_byte(data_socket):
     :return: the next byte, as a bytes object with a single byte in it
     """
     return data_socket.recv(1)
+
 
 main()
