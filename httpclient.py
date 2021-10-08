@@ -137,7 +137,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     :return: the status code
     :rtype: int
     """
-    create_socket()
+    create_socket(port)
     send_request()
     header = get_header()
     if(is_chunking(header)):
@@ -145,7 +145,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
            size = read_size()
            if(size==0):
                break
-            read_chunked_message()
+           read_chunked_message()
     elif(not(is_chunking(header))):
        size = read_size()
        read_message(size)
@@ -158,7 +158,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
 # Define additional functions here as necessary
 # Don't forget docstrings and :author: tags
 
-def create_socket():
+def create_socket(port):
     """
 
     :return:
@@ -189,6 +189,7 @@ def read_key_value_lines():
     :author: Parker Foord, Aidan Waterman
     """
 
+
 def read_chunked_message():
     """
 
@@ -202,6 +203,8 @@ def read_message():
     :return:
     :author: Parker Foord, Aidan Waterman
     """
+    while True:
+        new_byte = next_byte()
 
 
 def save_to_file(file_name,content):
@@ -237,11 +240,12 @@ def read_size():
         else:
             size += new_byte
 
-def is_chunking():
+def is_chunking(header):
     """
 
     :return:
     """
+    # read through bytes until it finds the chunking and returns true or false
 
 def next_byte(data_socket):
     """
