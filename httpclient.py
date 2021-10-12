@@ -181,7 +181,7 @@ def send_request(data_socket):
 def get_header(data_socket):
     """
 
-    :return:
+    :return: header lines as a bytes object
     :author: Parker Foord, Aidan Waterman
     """
     while True:
@@ -263,6 +263,7 @@ def is_chunking(header):
     :return:
     """
     # read through bytes until it finds the chunking and returns true or false
+
 
 
 def next_byte(data_socket):
