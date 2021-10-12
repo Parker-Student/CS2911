@@ -75,14 +75,12 @@ def main():
     get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
 
     # this resource request should result in "chunked" data transfer
-    get_http_resource('http://www.httpvshttps.com/',
-                      'index.html')
-    
+    get_http_resource('http://www.httpvshttps.com/', 'index.html')
+
     # HTTPS example. (Just for fun.)
     # get_http_resource('https://www.httpvshttps.com/', 'https_index.html')
 
     # If you find fun examples of chunked or Content-Length pages, please share them with us!
-
 
 
 def get_http_resource(url, file_name):
@@ -105,7 +103,7 @@ def get_http_resource(url, file_name):
         use_https = False
         protocol = 'http'
         default_port = 80
-    url_match = re.search(protocol+'://([^/:]*)(:\d*)?(/.*)', url)
+    url_match = re.search(protocol + '://([^/:]*)(:\d*)?(/.*)', url)
     url_match_groups = url_match.groups() if url_match else []
     #    print 'url_match_groups=',url_match_groups
     if len(url_match_groups) == 3:
@@ -113,7 +111,7 @@ def get_http_resource(url, file_name):
         host_port = int(url_match_groups[1][1:]) if url_match_groups[1] else default_port
         host_resource = url_match_groups[2]
         print('host name = {0}, port = {1}, resource = {2}'.
-                format(host_name, host_port, host_resource))
+              format(host_name, host_port, host_resource))
         status_string = do_http_exchange(use_https, host_name.encode(), host_port,
                                          host_resource.encode(), file_name)
         print('get_http_resource: URL="{0}", status="{1}"'.format(url, status_string))
@@ -140,20 +138,21 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     (data_socket, address) = create_socket(port)
     send_request(data_socket)
     header = get_header(data_socket)
-    if(is_chunking(header)):
-       while True:
-           size = read_size(data_socket)
-           if(size==0):
-               break
-           read_chunked_message(data_socket)
-    elif(not(is_chunking(header))):
-       size = read_size(data_socket)
-       read_message(size)
+    if (is_chunking(header)):
+        while True:
+            size = read_size(data_socket)
+            if (size == 0):
+                break
+            read_chunked_message(data_socket)
+    elif (not (is_chunking(header))):
+        size = read_size(data_socket)
+        read_message(size)
     else:
         # error message
         return 500
 
     return send_return_message()  # Replace this "server error" with the actual status code
+
 
 # Define additional functions here as necessary
 # Don't forget docstrings and :author: tags
@@ -185,7 +184,15 @@ def get_header(data_socket):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
-    # read through the resonse line, grab the status value
+    while True:
+        new_byte = next_byte(data_socket)
+        header_bytes = + new_byte
+        if (new_byte == b'\xCR\xLF' and old_byte == b'\xCR\xLF'):
+            break
+        old_byte = new_byte
+        
+
+    # read through the response line, grab the status value
     read_key_value_lines()
     # read blank line
 
@@ -222,7 +229,7 @@ def save_to_file(file_name, content):
     :author: Parker Foord
     """
 
-    with open (file_name, 'w') as file:
+    with open(file_name, 'w') as file:
         file.write(content)
 
 
@@ -243,7 +250,7 @@ def read_size(data_socket):
     size = b'\x00'
     while True:
         new_byte = next_byte(data_socket)
-        if(new_byte == b'\x0d'):
+        if (new_byte == b'\x0d'):
             next_byte(data_socket)
             return size
         else:
