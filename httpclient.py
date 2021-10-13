@@ -137,16 +137,15 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     """
     (data_socket, address) = create_socket(port)
     send_request(data_socket)
-    header = get_header(data_socket)
-    if (is_chunking(header)):
+    (status_message, context) = get_header(data_socket)
+    if context == -1:
         while True:
             size = read_size(data_socket)
             if (size == 0):
                 break
             read_chunked_message(data_socket)
-    elif (not (is_chunking(header))):
-        size = read_size(data_socket)
-        read_message(size)
+    elif context != -1:
+        read_message(context)
     else:
         # error message
         return 500
@@ -184,18 +183,20 @@ def get_header(data_socket):
     :return: header lines as a bytes object
     :author: Parker Foord, Aidan Waterman
     """
-    header = ""
-    new_byte = b'\x00'
     old_byte = b'\x00'
     header_bytes = b'\x00'
     status = b''
     while True:
         new_byte = next_byte(data_socket)
         header_bytes += new_byte
-        if new_byte == : # bytes to signify the status message
-            # get status message
+        if new_byte == b'\20' and status == b'':
+            new_byte = next_byte(data_socket)
+            status = new_byte
+            new_byte = next_byte(data_socket)
+            status += new_byte
         elif new_byte == b'\x0D' and old_byte == b'\x0A':
-            read_key_value_lines(data_socket)
+            context = read_key_value_lines(data_socket)
+            return (status, context)
         old_byte = new_byte
 
 
