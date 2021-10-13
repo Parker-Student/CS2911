@@ -162,8 +162,8 @@ def do_http_exchange(use_https, host, port, resource, file_name):
 def create_socket(port):
     """
 
-    :return:
-    :author: Parker Foord, Aidan Waterman
+    :return: data socket and ip address in a tuple
+    :author: Aidan Waterman
     """
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.bind(('', port))
