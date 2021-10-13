@@ -184,17 +184,19 @@ def get_header(data_socket):
     :return: header lines as a bytes object
     :author: Parker Foord, Aidan Waterman
     """
+    header = ""
+    new_byte = b'\x00'
+    old_byte = b'\x00'
+    header_bytes = b'\x00'
+    returned = 0
     while True:
         new_byte = next_byte(data_socket)
-        header_bytes = + new_byte
-        if (new_byte == b'\xCR\xLF' and old_byte == b'\xCR\xLF'):
-            break
+        header_bytes += new_byte
+        if new_byte == : # bytes to signify the status message
+            # get status message
+        elif new_byte == b'\x0D' and old_byte == b'\x0A':
+            read_key_value_lines(data_socket)
         old_byte = new_byte
-        
-
-    # read through the response line, grab the status value
-    read_key_value_lines()
-    # read blank line
 
 
 def read_key_value_lines(data_socket):
@@ -203,6 +205,22 @@ def read_key_value_lines(data_socket):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
+    old_byte = b'\x00'
+    header_bytes = b'\x00'
+    returned = 0
+    while True:
+        new_byte = next_byte(data_socket)
+        header_bytes += new_byte
+        if new_byte == b'\x0D' and old_byte == b'\x0A':
+            if returned == 0:
+                returned = 1
+            else:
+                return header_bytes.decode()
+        elif new_byte == b'\x0A' and old_byte == b'\x0D':
+            returned = 1
+        else:
+            returned = 0
+        old_byte = new_byte
 
 
 def read_chunked_message(data_socket):
@@ -215,13 +233,19 @@ def read_chunked_message(data_socket):
 
 def read_message(data_socket):
     """
-
-    :return:
-    :author: Parker Foord, Aidan Waterman
+    Reads the size of an unchunked message and then reads the message until the size is met
+    :return: the bytes of the message body
+    :author: Aidan Waterman
     """
+    size = read_size(data_socket)
+    counter = 0
+    message_bytes = b'\x00'
     while True:
-        new_byte = next_byte()
-
+        if counter != size:
+            message_bytes += next_byte(data_socket)
+            counter += 1
+        else:
+            return message_bytes
 
 def save_to_file(file_name, content):
     """
