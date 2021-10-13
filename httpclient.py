@@ -188,7 +188,7 @@ def get_header(data_socket):
     new_byte = b'\x00'
     old_byte = b'\x00'
     header_bytes = b'\x00'
-    returned = 0
+    status = b''
     while True:
         new_byte = next_byte(data_socket)
         header_bytes += new_byte
@@ -229,6 +229,7 @@ def read_chunked_message(data_socket):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
+
 
 
 def read_message(data_socket):
@@ -287,6 +288,10 @@ def is_chunking(header):
     :return:
     """
     # read through bytes until it finds the chunking and returns true or false
+
+
+
+
 
 
 
