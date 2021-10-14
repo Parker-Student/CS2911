@@ -135,22 +135,26 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     :return: the status code
     :rtype: int
     """
-    (data_socket, address) = create_socket(port)
-    send_request(data_socket)
+    #(data_socket, address) = create_socket(port)
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket.bind(('', port))
+    tcp_socket.listen(1)
+    (data_socket, address) = tcp_socket.accept()
+    send_request(data_socket, host, resource)
     (status_message, context) = get_header(data_socket)
     if context == -1:
         while True:
             size = read_size(data_socket)
-            if (size == 0):
+            if size == 0:
                 break
-            read_chunked_message(data_socket)
+            read_chunked_message(data_socket, file_name)
     elif context != -1:
-        read_message(context)
+        read_message(data_socket, context, file_name)
     else:
         # error message
         status_message = 500
 
-    return send_return_message()  # Replace this "server error" with the actual status code
+    return status_message
 
 
 # Define additional functions here as necessary
@@ -169,9 +173,9 @@ def create_socket(port):
     return tcp_socket.accept()
 
 
-def send_request(data_socket):
+def send_request(data_socket, host, resource):
     """
-
+    Concatenate bytes to create a request
     :return:
     :author: Parker Foord, Aidan Waterman
     """
@@ -196,9 +200,11 @@ def get_header(data_socket):
             status = new_byte
             new_byte = next_byte(data_socket)
             status += new_byte
+            new_byte = next_byte(data_socket)
+            status += new_byte
         elif new_byte == b'\x0D' and old_byte == b'\x0A':
             context = read_key_value_lines(data_socket)
-            return (status, context)
+            return status, context
         old_byte = new_byte
 
 
@@ -209,16 +215,24 @@ def read_key_value_lines(data_socket):
     :author: Parker Foord, Aidan Waterman
     """
     old_byte = b'\x00'
-    header_bytes = b'\x00'
+    line_bytes = b''
     returned = 0
+    context = -2
     while True:
         new_byte = next_byte(data_socket)
-        header_bytes += new_byte
+        line_bytes += new_byte
         if new_byte == b'\x0D' and old_byte == b'\x0A':
+            # if elif for context
+            if "Content-Length:" in line_bytes.decode('ASCII'):
+                line = line_bytes.decode("ASCII")
+                context = list(line).index(16, list(line).count()-4)
+            elif "Transfer-Encoding: chunked" in line_bytes.decode('ASCII'):
+                context = -1
+            line_bytes = b''
             if returned == 0:
                 returned = 1
             else:
-                return header_bytes.decode()
+                return context
         elif new_byte == b'\x0A' and old_byte == b'\x0D':
             returned = 1
         else:
@@ -226,12 +240,28 @@ def read_key_value_lines(data_socket):
         old_byte = new_byte
 
 
-def read_chunked_message(data_socket):
+def read_chunked_message(data_socket, file_name):
     """
-
+    Reads chunked messages and saves the bytes to a file
     :return:
-    :author: Parker Foord, Aidan Waterman
+    :author: Aidan Waterman
     """
+    while True:
+        size = read_size(data_socket)
+        counter = 0
+        message_bytes = b'\x00'
+        if size == 0:
+            save_to_file(file_name, message_bytes)
+            return
+        while True:
+            if counter != size:
+                message_bytes += next_byte(data_socket)
+                counter += 1
+            else:
+                next_byte(data_socket)
+                next_byte(data_socket)
+                break
+
 
 def read_message(data_socket, size, file_name):
     """
@@ -239,7 +269,7 @@ def read_message(data_socket, size, file_name):
     :return: the bytes of the message body
     :author: Aidan Waterman
     """
-    size = read_size(data_socket)
+    size = size
     counter = 0
     message_bytes = b'\x00'
     while True:
@@ -247,7 +277,9 @@ def read_message(data_socket, size, file_name):
             message_bytes += next_byte(data_socket)
             counter += 1
         else:
-            return message_bytes
+            save_to_file(file_name, message_bytes)
+            return
+
 
 def save_to_file(file_name, content):
     """
@@ -257,14 +289,6 @@ def save_to_file(file_name, content):
 
     with open(file_name, 'w') as file:
         file.write(content)
-
-
-def send_return_message(data_socket):
-    """
-
-    :return:
-    :author: Parker Foord, Aidan Waterman
-    """
 
 
 def read_size(data_socket):
