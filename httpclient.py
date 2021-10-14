@@ -72,7 +72,7 @@ def main():
     """
 
     # These resource request should result in "Content-Length" data transfer
-    get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
+   # get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
 
     # this resource request should result in "chunked" data transfer
     get_http_resource('http://www.httpvshttps.com/', 'index.html')
@@ -148,7 +148,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
         read_message(context)
     else:
         # error message
-        return 500
+        status_message = 500
 
     return send_return_message()  # Replace this "server error" with the actual status code
 
@@ -175,7 +175,9 @@ def send_request(data_socket):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
-
+    header = "Host: " + host
+    request_line = "GET " + resource + "HTTP1.1"
+    return request_line.encode() + b'\x0D\x0A' + header.encode()
 
 def get_header(data_socket):
     """
@@ -231,9 +233,7 @@ def read_chunked_message(data_socket):
     :author: Parker Foord, Aidan Waterman
     """
 
-
-
-def read_message(data_socket):
+def read_message(data_socket, size, file_name):
     """
     Reads the size of an unchunked message and then reads the message until the size is met
     :return: the bytes of the message body
@@ -281,19 +281,6 @@ def read_size(data_socket):
             return size
         else:
             size += new_byte
-
-
-def is_chunking(header):
-    """
-
-    :return:
-    """
-    # read through bytes until it finds the chunking and returns true or false
-
-
-
-
-
 
 
 def next_byte(data_socket):
