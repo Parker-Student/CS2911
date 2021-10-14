@@ -177,8 +177,8 @@ def send_request(data_socket, host, resource):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
-    header = "Host: " + host
-    request_line = "GET " + resource + "HTTP1.1"
+    header = "Host: " + host.decode('ASCII')
+    request_line = "GET " + resource.decode('ASCII') + "HTTP1.1"
     return request_line.encode() + b'\x0D\x0A' + header.encode()
 
 def get_header(data_socket):
