@@ -179,7 +179,7 @@ def send_request(data_socket, host, resource):
     """
     header = "Host: " + host.decode('ASCII')
     request_line = "GET " + resource.decode('ASCII') + "HTTP1.1"
-    return request_line.encode() + b'\x0D\x0A' + header.encode()
+    data_socket.sendall(request_line.encode() + b'\x0D\x0A' + header.encode())
 
 def get_header(data_socket):
     """
@@ -193,7 +193,7 @@ def get_header(data_socket):
     while True:
         new_byte = next_byte(data_socket)
         header_bytes += new_byte
-        if new_byte == b'\20' and status == b'':
+        if new_byte == b'\x20' and status == b'':
             new_byte = next_byte(data_socket)
             status = new_byte
             new_byte = next_byte(data_socket)
@@ -204,6 +204,9 @@ def get_header(data_socket):
             context = read_key_value_lines(data_socket)
             return status, context
         old_byte = new_byte
+
+        
+
 
 
 def read_key_value_lines(data_socket):
