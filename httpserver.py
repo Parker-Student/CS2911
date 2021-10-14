@@ -1,9 +1,8 @@
 """
-- NOTE: REPLACE 'N' Below with your section, year, and lab number
-- CS2911 - 0NN
-- Fall 202N
-- Lab N
-- Names:
+  - CS2911 - 021
+  - Fall 2021
+  - Lab 6
+  - Names: Parker Foord and Aidan Waterman
   - 
   - 
 
