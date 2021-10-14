@@ -136,10 +136,8 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     :rtype: int
     """
     #(data_socket, address) = create_socket(port)
-    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp_socket.bind(('', port))
-    tcp_socket.listen(1)
-    (data_socket, address) = tcp_socket.accept()
+    data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    data_socket.connect(('', port))
     send_request(data_socket, host, resource)
     (status_message, context) = get_header(data_socket)
     if context == -1:

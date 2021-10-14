@@ -78,8 +78,53 @@ def handle_request(request_socket):
     :return: None
     """
 
-    pass  # Replace this line with your code
+    response = b''
+    dictionary = parse_request(request_socket)
+    if is_valid_request(dictionary):
+        response = build_response(read_body(dictionary))
+    else:
+        response = build_response(400)
+    send_response(request_socket, response)
+    request_socket.close()
 
+
+def parse_request(request_socket):
+    """
+
+    :param request_socket:
+    :return:
+    """
+    return -1
+
+
+def build_response(status_code, **request):
+    """
+
+    :param status_code:
+    :param request:
+    :return:
+    """
+    return -1
+
+def is_valid_request(dictionary):
+    """
+
+    :param dictionary:
+    :return:
+    """
+
+
+
+def read_body(dictionary):
+    """
+
+    :param dictionary:
+    :return:
+    """
+
+def send_response(request_socket, response):
+
+    return -1
 
 # ** Do not modify code below this line.  You should add additional helper methods above this line.
 
