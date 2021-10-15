@@ -72,7 +72,7 @@ def main():
     """
 
     # These resource request should result in "Content-Length" data transfer
-   # get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
+    # get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
 
     # this resource request should result in "chunked" data transfer
     get_http_resource('http://www.httpvshttps.com/', 'index.html')
@@ -135,40 +135,25 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     :return: the status code
     :rtype: int
     """
-    #(data_socket, address) = create_socket(port)
     data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     data_socket.connect((host, port))
     send_request(data_socket, host, resource)
     (status_message, context) = get_header(data_socket)
     if context == -1:
         while True:
-            size = read_size(data_socket)
-            if size == 0:
-                break
             read_chunked_message(data_socket, file_name)
+    elif context == -2:
+        status_message = 500
+        print("Header did not show message length or chunking")
     elif context != -1:
         read_message(data_socket, context, file_name)
-    else:
-        # error message
-        status_message = 500
-
+    data_socket.close()
+    print(status_message.decode('ASCII'))
     return status_message
 
 
 # Define additional functions here as necessary
 # Don't forget docstrings and :author: tags
-
-
-def create_socket(port):
-    """
-
-    :return: data socket and ip address in a tuple
-    :author: Aidan Waterman
-    """
-    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp_socket.bind(('', port))
-    tcp_socket.listen(1)
-    return tcp_socket.accept()
 
 
 def send_request(data_socket, host, resource):
@@ -178,8 +163,9 @@ def send_request(data_socket, host, resource):
     :author: Parker Foord, Aidan Waterman
     """
     header = "Host: " + host.decode('ASCII')
-    request_line = "GET " + resource.decode('ASCII') + "HTTP1.1"
-    data_socket.sendall(request_line.encode() + b'\x0D\x0A' + header.encode())
+    request_line = "GET " + resource.decode('ASCII') + " HTTP/1.1"
+    data_socket.sendall(request_line.encode() + b'\x0D\x0A' + header.encode() + b'\x0D\x0A\x0D\x0A')
+
 
 def get_header(data_socket):
     """
@@ -187,26 +173,21 @@ def get_header(data_socket):
     :return: header lines as a bytes object
     :author: Parker Foord, Aidan Waterman
     """
-    old_byte = b'\x00'
-    header_bytes = b'\x00'
     status = b''
     while True:
-        new_byte = next_byte(data_socket)
-        header_bytes += new_byte
-        if new_byte == b'\x20' and status == b'':
-            new_byte = next_byte(data_socket)
-            status = new_byte
-            new_byte = next_byte(data_socket)
-            status += new_byte
-            new_byte = next_byte(data_socket)
-            status += new_byte
-        elif new_byte == b'\x0D' and old_byte == b'\x0A':
+        if status != b'':
             context = read_key_value_lines(data_socket)
             return status, context
-        old_byte = new_byte
-
-        
-
+        else:
+            while True:
+                if next_byte(data_socket) == b'\x20':
+                    new_byte = next_byte(data_socket)
+                    status = new_byte
+                    new_byte = next_byte(data_socket)
+                    status += new_byte
+                    new_byte = next_byte(data_socket)
+                    status += new_byte
+                    break
 
 
 def read_key_value_lines(data_socket):
@@ -215,30 +196,19 @@ def read_key_value_lines(data_socket):
     :return:
     :author: Parker Foord, Aidan Waterman
     """
-    old_byte = b'\x00'
-    line_bytes = b''
-    returned = 0
     context = -2
     while True:
-        new_byte = next_byte(data_socket)
-        line_bytes += new_byte
-        if new_byte == b'\x0D' and old_byte == b'\x0A':
-            # if elif for context
-            if "Content-Length:" in line_bytes.decode('ASCII'):
-                line = line_bytes.decode("ASCII")
-                context = list(line).index(16, list(line).count()-4)
-            elif "Transfer-Encoding: chunked" in line_bytes.decode('ASCII'):
-                context = -1
-            line_bytes = b''
-            if returned == 0:
-                returned = 1
+        line = next_line(data_socket)
+        if line == b'\x0D\x0A':
+            if context != -1:
+                return context.removesuffix(b'\x0D\x0A')
             else:
                 return context
-        elif new_byte == b'\x0A' and old_byte == b'\x0D':
-            returned = 1
-        else:
-            returned = 0
-        old_byte = new_byte
+        if "Content-Length:".encode('ASCII') in line:
+            context = line.removeprefix("Content-Length:".encode('ASCII'))
+        elif "Transfer-Encoding: chunked".encode('ASCII') in line:
+            context = -1
+        line = b''
 
 
 def read_chunked_message(data_socket, file_name):
@@ -250,18 +220,18 @@ def read_chunked_message(data_socket, file_name):
     while True:
         size = read_size(data_socket)
         counter = 0
-        message_bytes = b'\x00'
+        message_bytes = b''
         if size == 0:
             save_to_file(file_name, message_bytes)
             return
         while True:
-            if counter != size:
-                message_bytes += next_byte(data_socket)
-                counter += 1
-            else:
+            if counter == int(size):
                 next_byte(data_socket)
                 next_byte(data_socket)
                 break
+            else:
+                message_bytes += next_byte(data_socket)
+                counter += 1
 
 
 def read_message(data_socket, size, file_name):
@@ -272,14 +242,14 @@ def read_message(data_socket, size, file_name):
     """
     size = size
     counter = 0
-    message_bytes = b'\x00'
+    message_bytes = b''
     while True:
-        if counter != size:
+        if counter == int(size):
+            save_to_file(file_name, message_bytes)
+            break
+        else:
             message_bytes += next_byte(data_socket)
             counter += 1
-        else:
-            save_to_file(file_name, message_bytes)
-            return
 
 
 def save_to_file(file_name, content):
@@ -288,7 +258,7 @@ def save_to_file(file_name, content):
     :author: Parker Foord
     """
 
-    with open(file_name, 'w') as file:
+    with open(file_name, 'wb') as file:
         file.write(content)
 
 
@@ -298,7 +268,7 @@ def read_size(data_socket):
     :return: size of the message following
     :author: Aidan Waterman
     """
-    size = b'\x00'
+    size = b''
     while True:
         new_byte = next_byte(data_socket)
         if (new_byte == b'\x0d'):
@@ -306,6 +276,13 @@ def read_size(data_socket):
             return size
         else:
             size += new_byte
+
+
+def next_line(data_socket):
+    line = b''
+    while b'\x0D\x0A' not in line:
+        line += next_byte(data_socket)
+    return line
 
 
 def next_byte(data_socket):
