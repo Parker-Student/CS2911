@@ -80,7 +80,7 @@ def handle_request(request_socket):
     response = b''
     dictionary = parse_request(request_socket)
     if is_valid_request(dictionary):
-        response = build_response(read_body(dictionary))
+        response = build_response(200, read_body(dictionary))
     else:
         response = build_response(400)
     send_response(request_socket, response)
@@ -103,7 +103,10 @@ def build_response(status_code, **request):
     :param request:
     :return:
     """
+    if status_code == 200:
+        return {}.format(request)
     return -1
+
 
 def is_valid_request(dictionary):
     """
@@ -113,13 +116,13 @@ def is_valid_request(dictionary):
     """
 
 
-
 def read_body(dictionary):
     """
 
     :param dictionary:
     :return:
     """
+
 
 def send_response(request_socket, response):
 
@@ -161,6 +164,36 @@ def get_file_size(file_path):
     if os.path.isfile(file_path):
         file_size = os.stat(file_path).st_size
     return file_size
+
+
+def next_line(data_socket):
+    """
+    Reads bytes until a new line is found
+    :param data_socket:
+    :return: Byte object containing a single line of data
+    :Author: Aidan Waterman
+    """
+    line = b''
+    while b'\x0D\x0A' not in line:
+        line += next_byte(data_socket)
+    return line
+
+
+def next_byte(data_socket):
+    """
+    Read the next byte from the socket data_socket.
+
+    Read the next byte from the sender, received over the network.
+    If the byte has not yet arrived, this method blocks (waits)
+    until the byte arrives.
+    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
+
+    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
+                            data connection (either a client socket or a server data socket), not a tcp
+                            server's listening socket.
+    :return: the next byte, as a bytes object with a single byte in it
+    """
+    return data_socket.recv(1)
 
 
 main()
