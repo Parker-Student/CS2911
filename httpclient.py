@@ -72,7 +72,7 @@ def main():
     """
 
     # These resource request should result in "Content-Length" data transfer
-    # get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
+    get_http_resource('http://www.httpvshttps.com/check.png', 'check.png')
 
     # this resource request should result in "chunked" data transfer
     get_http_resource('http://www.httpvshttps.com/', 'index.html')
@@ -140,8 +140,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     send_request(data_socket, host, resource)
     (status_message, context) = get_header(data_socket)
     if context == -1:
-        while True:
-            read_chunked_message(data_socket, file_name)
+        read_chunked_message(data_socket, file_name)
     elif context == -2:
         status_message = 500
         print("Header did not show message length or chunking")
@@ -218,14 +217,16 @@ def read_chunked_message(data_socket, file_name):
     :author: Aidan Waterman
     """
     while True:
-        size = read_size(data_socket)
+        size = int(read_size(data_socket), 16)
         counter = 0
         message_bytes = b''
         if size == 0:
             save_to_file(file_name, message_bytes)
             return
         while True:
-            if counter == int(size):
+            if counter == 37714:
+                cow = 0
+            if counter == size:
                 next_byte(data_socket)
                 next_byte(data_socket)
                 break
