@@ -138,6 +138,7 @@ def do_http_exchange(use_https, host, port, resource, file_name):
     data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     data_socket.connect((host, port))
     send_request(data_socket, host, resource)
+    print(next_byte(data_socket).decode('ASCII'))
     (status_message, context) = get_header(data_socket)
     if context == -1:
         read_chunked_message(data_socket, file_name)

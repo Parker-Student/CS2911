@@ -77,10 +77,13 @@ def handle_request(request_socket):
     :return: None
     """
 
-    response = b''
     dictionary = parse_request(request_socket)
     if is_valid_request(dictionary):
-        response = build_response(200, read_body(dictionary))
+        resource = dictionary ['Request'].split(" ")[1]
+        if resource == "/" or "/index.html" or "/msoe.png" or "/styles.css":
+            response = build_response(200, resource)
+        else:
+            build_response(404)
     else:
         response = build_response(400)
     send_response(request_socket, response)
@@ -89,11 +92,36 @@ def handle_request(request_socket):
 
 def parse_request(request_socket):
     """
-
+    Parses the request and stores the key:value pairs in a dictionary
     :param request_socket:
-    :return:
+    :return: dictionary of key:value pairs
+    :Author: Parker Foord
     """
-    return -1
+    request_line = next_line(request_socket)
+    dictionary = {}
+    while True:
+        line = next_line(request_socket)
+        if line == b'\x0D\x0A':
+            dictionary["Request"] = request_line.decode('ASCII')
+            return dictionary
+
+        else:
+            split_line = line.split(": ".encode('ASCII'))
+            key = split_line[0]
+            value = split_line[1]
+            dictionary[key.decode('ASCII')] = value.decode('ASCII')
+
+
+def is_valid_request(dictionary):
+    """
+    Checks if the dictionary contains a request and host line
+    :param dictionary:
+    :return: a boolean representing if the request is valid or not
+    """
+    if "Host" in dictionary.keys() and "Request" in dictionary.keys():
+        return True
+    else:
+        return False
 
 
 def build_response(status_code, *request):
@@ -103,6 +131,9 @@ def build_response(status_code, *request):
     :param request:
     :return:
     """
+    timestamp = datetime.datetime.utcnow()
+    time_string = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    response = {"Status": [], "Date": time_string, "Content-Length": [], "Content-Type": [], "Connection": "Closed"}
     if status_code == 200:
         response["Status"] = "HTTP/1.1 200 OK".encode('ASCII')
         response["Content-Type"] = get_mime_type(request)
@@ -117,8 +148,38 @@ def build_response(status_code, *request):
 
 
 def send_response(request_socket, response):
+    request_socket.sendall(response)
 
-    return -1
+
+def next_line(data_socket):
+    """
+    Reads bytes until a new line is found
+    :param data_socket:
+    :return: Byte object containing a single line of data
+    :Author: Aidan Waterman
+    """
+    line = b''
+    while b'\x0D\x0A' not in line:
+        line += next_byte(data_socket)
+    return line
+
+
+def next_byte(data_socket):
+    """
+    Read the next byte from the socket data_socket.
+
+    Read the next byte from the sender, received over the network.
+    If the byte has not yet arrived, this method blocks (waits)
+    until the byte arrives.
+    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
+
+    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
+                            data connection (either a client socket or a server data socket), not a tcp
+                            server's listening socket.
+    :return: the next byte, as a bytes object with a single byte in it
+    """
+    return data_socket.recv(1)
+
 
 # ** Do not modify code below this line.  You should add additional helper methods above this line.
 
@@ -156,36 +217,6 @@ def get_file_size(file_path):
     if os.path.isfile(file_path):
         file_size = os.stat(file_path).st_size
     return file_size
-
-
-def next_line(data_socket):
-    """
-    Reads bytes until a new line is found
-    :param data_socket:
-    :return: Byte object containing a single line of data
-    :Author: Aidan Waterman
-    """
-    line = b''
-    while b'\x0D\x0A' not in line:
-        line += next_byte(data_socket)
-    return line
-
-
-def next_byte(data_socket):
-    """
-    Read the next byte from the socket data_socket.
-
-    Read the next byte from the sender, received over the network.
-    If the byte has not yet arrived, this method blocks (waits)
-    until the byte arrives.
-    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
-
-    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
-                            data connection (either a client socket or a server data socket), not a tcp
-                            server's listening socket.
-    :return: the next byte, as a bytes object with a single byte in it
-    """
-    return data_socket.recv(1)
 
 
 main()
