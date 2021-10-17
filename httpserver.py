@@ -96,7 +96,7 @@ def parse_request(request_socket):
     return -1
 
 
-def build_response(status_code, **request):
+def build_response(status_code, *request):
     """
 
     :param status_code:
@@ -104,24 +104,16 @@ def build_response(status_code, **request):
     :return:
     """
     if status_code == 200:
-        return {}.format(request)
-    return -1
-
-
-def is_valid_request(dictionary):
-    """
-
-    :param dictionary:
-    :return:
-    """
-
-
-def read_body(dictionary):
-    """
-
-    :param dictionary:
-    :return:
-    """
+        response["Status"] = "HTTP/1.1 200 OK".encode('ASCII')
+        response["Content-Type"] = get_mime_type(request)
+        response["Content-Length"] = get_file_size(request)
+    elif status_code == 400:
+        response["Status"] = "HTTP/1.1 400 Bad Request".encode('ASCII')
+    elif status_code == 404:
+        response["Status"] = "HTTP/1.1 404 Not Found".encode('ASCII')
+    else:
+        response = "Error".encode('ASCII')
+    return response
 
 
 def send_response(request_socket, response):
