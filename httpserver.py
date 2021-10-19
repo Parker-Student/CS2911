@@ -144,10 +144,7 @@ def build_response(status_code, *request):
             resource = "./Lab6Resources/styles.css"
         response["Content-Type"] = get_mime_type(resource)
         response["Content-Length"] = str(get_file_size(resource))
-        body = open(resource).read()
-
-        # Needs to read in body as bytes object then should be fully functioning
-
+        body = open(resource, "rb").read()
     elif status_code == 400:
         response["Status"] = "HTTP/1.1 400 Bad Request".encode('ASCII')
     elif status_code == 404:
