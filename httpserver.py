@@ -136,15 +136,31 @@ def build_response(status_code, *request):
     response = {"Status": [], "Date": time_string, "Content-Length": [], "Content-Type": [], "Connection": "Closed"}
     if status_code == 200:
         response["Status"] = "HTTP/1.1 200 OK".encode('ASCII')
-        response["Content-Type"] = get_mime_type(request)
-        response["Content-Length"] = get_file_size(request)
+        if request == "/" or "/index.html":
+            resource = "./Lab6Resources/index.html"
+        elif request == "/msoe.png":
+            resource = "./Lab6Resources/msoe.png"
+        elif request == "/styles.css":
+            resource = "./Lab6Resources/styles.css"
+        response["Content-Type"] = get_mime_type(resource)
+        response["Content-Length"] = str(get_file_size(resource))
+        body = open(resource).read()
+
+        # Needs to read in body as bytes object then should be fully functioning
+
     elif status_code == 400:
         response["Status"] = "HTTP/1.1 400 Bad Request".encode('ASCII')
     elif status_code == 404:
         response["Status"] = "HTTP/1.1 404 Not Found".encode('ASCII')
     else:
         response = "Error".encode('ASCII')
-    return response
+    message = response["Status"]
+    for key, value in response.items():
+        message += key.encode('ASCII')
+        message += str(value).encode('ASCII')
+        message += b'\x0D\x0A'
+    message += body
+    return message
 
 
 def send_response(request_socket, response):

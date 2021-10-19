@@ -1,0 +1,22 @@
+body {
+    background-color: lightgray;
+    padding: 30px;
+}
+
+h1 {
+    color: #ba0c2f;
+    font-family: "Comic Sans MS";
+}
+
+p {
+    font-size: 1.3rem
+}
+
+img.msoe {
+    padding: 10px;
+    float: right;
+}
+
+a:hover {
+    text-decoration: unset;
+}
