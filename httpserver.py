@@ -79,9 +79,18 @@ def handle_request(request_socket):
 
     dictionary = parse_request(request_socket)
     if is_valid_request(dictionary):
-        resource = dictionary ['Request'].split(" ")[1]
-        if resource == "/" or "/index.html" or "/msoe.png" or "/styles.css":
-            response = build_response(200, resource)
+        resource = dictionary['Request'].split(" ")[1]
+        if resource == "/" or resource == "/index.html" or resource == "/msoe.png" or resource == "/styles.css":
+            res = 0
+            if resource == "/":
+                res = 1
+            elif resource == "/index.html":
+                res = 2
+            elif resource == "/msoe.png":
+                res = 3
+            elif resource == "/styles.css":
+                res = 4
+            response = build_response(200, res)
         else:
             build_response(404)
     else:
@@ -124,7 +133,7 @@ def is_valid_request(dictionary):
         return False
 
 
-def build_response(status_code, *request):
+def build_response(status_code, request):
     """
 
     :param status_code:
