@@ -92,9 +92,9 @@ def handle_request(request_socket):
                 res = 4
             response = build_response(200, res)
         else:
-            build_response(404)
+            response = build_response(404, 0)
     else:
-        response = build_response(400)
+        response = build_response(400, 0)
     send_response(request_socket, response)
     request_socket.close()
 
@@ -142,19 +142,19 @@ def build_response(status_code, request):
     """
     timestamp = datetime.datetime.utcnow()
     time_string = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    body = b''
     response = {"Status": [], "Date": time_string, "Content-Length": [], "Content-Type": [], "Connection": "Closed"}
     if status_code == 200:
         response["Status"] = "HTTP/1.1 200 OK".encode('ASCII')
-        if request == "/" or "/index.html":
-            resource = "./Lab6Resources/index.html"
-        elif request == "/msoe.png":
-            resource = "./Lab6Resources/msoe.png"
-        elif request == "/styles.css":
+        if request == 4:
             resource = "./Lab6Resources/styles.css"
+        elif request == 3:
+            resource = "./Lab6Resources/msoe.png"
+        elif request == 1 or 2:
+            resource = "./Lab6Resources/index.html"
         response["Content-Type"] = get_mime_type(resource)
         response["Content-Length"] = str(get_file_size(resource))
         file = open(resource, "rb")
-        body = b''
         byte = file.read(1)
         while byte:
             body += byte
@@ -167,10 +167,14 @@ def build_response(status_code, request):
     else:
         response = "Error".encode('ASCII')
     message = response["Status"]
+    message += b'\x0D\x0A'
     for key, value in response.items():
-        message += key.encode('ASCII')
-        message += str(value).encode('ASCII')
-        message += b'\x0D\x0A'
+        if key != "Status":
+            message += key.encode('ASCII')
+            message += ": ".encode('ASCII')
+            message += str(value).encode('ASCII')
+            message += b'\x0D\x0A'
+    message += b'\x0D\x0A'
     message += body
     return message
 
