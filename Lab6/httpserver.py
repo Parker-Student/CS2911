@@ -9,15 +9,15 @@
 An HTTP server
 
 Introduction: (Describe the lab in your own words)
-
-
-
+    The goal of this lab is to handle all possible requests that the server receives and if the request is a valid
+    request for a resource that we have downloaded, return a response containing the resource, otherwise return a message
+    containing 404 or 400 status codes.
 
 Summary: (Summarize your experience with the lab, what you learned, what you liked,what you disliked, and any suggestions you have for improvement)
-
-
-
-
+    This lab was not too difficult once the framework of lab 5 was properly built. This lab was nearly the exact opposite
+    of the previous lab and that helped a lot because we knew exactly what to build without doing too much more research.
+    Throughout this lab, we learned when to encode and decode data that is either being sent or received. We also learned
+    to debug using wireshark more effectively.
 
 """
 
@@ -126,6 +126,7 @@ def is_valid_request(dictionary):
     Checks if the dictionary contains a request and host line
     :param dictionary:
     :return: a boolean representing if the request is valid or not
+    :author: Aidan Waterman
     """
     if "Host" in dictionary.keys() and "Request" in dictionary.keys():
         return True
@@ -135,10 +136,11 @@ def is_valid_request(dictionary):
 
 def build_response(status_code, request):
     """
-
+    builds a bytes object containing the response message
     :param status_code:
     :param request:
-    :return:
+    :return: message
+    :author: Aidan Waterman, Parker Foord
     """
     timestamp = datetime.datetime.utcnow()
     time_string = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -180,6 +182,13 @@ def build_response(status_code, request):
 
 
 def send_response(request_socket, response):
+    """
+    Sends the response message on the given socket
+    :param request_socket:
+    :param response:
+    :return:
+    :author: Parker Foord
+    """
     request_socket.sendall(response)
 
 
