@@ -115,5 +115,15 @@ def socket_setup():
 # Write additional helper functions starting here  #
 ####################################################
 
+"""
+What We Need To Do:
+Build messages
+Send messages
+Read from client
+Parse Message
+Complete Exercise
 
+
+
+"""
 main()

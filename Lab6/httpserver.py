@@ -170,12 +170,22 @@ def build_response(status_code, request):
         response = "Error".encode('ASCII')
     message = response["Status"]
     message += b'\x0D\x0A'
-    for key, value in response.items():
-        if key != "Status":
-            message += key.encode('ASCII')
-            message += ": ".encode('ASCII')
-            message += str(value).encode('ASCII')
-            message += b'\x0D\x0A'
+    if status_code == 200:
+        for key, value in response.items():
+            if key != "Status":
+                message += key.encode('ASCII')
+                message += ": ".encode('ASCII')
+                message += str(value).encode('ASCII')
+                message += b'\x0D\x0A'
+    elif status_code == 400 or status_code == 404:
+        message += "Date".encode('ASCII')
+        message += ": ".encode('ASCII')
+        message += str(response["Date"]).encode('ASCII')
+        message += b'\x0D\x0A'
+        message += "Connection".encode('ASCII')
+        message += ": ".encode('ASCII')
+        message += str(response["Connection"]).encode('ASCII')
+        message += b'\x0D\x0A'
     message += b'\x0D\x0A'
     message += body
     return message
