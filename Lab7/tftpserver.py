@@ -47,24 +47,28 @@ def main():
     ####################################################
 
     opcode, filename, mode = read_request_line(client_socket)
-    # check the opcode
-    block_count = get_file_block_count(filename)
-    # if not valid send invalid file message
-    if block_count != -1:
-        # send block 1
-        while True:
-            opcode, ack_block_number, error_code, error_message = read_ack(client_socket)
-            if opcode == 4:
-                if ack_block_number == block_count:
+    if opcode == 1:
+        block_count = get_file_block_count(filename)
+        if block_count != -1:
+            # send block 1
+            build_response(filename, 1)
+            while True:
+                opcode, ack_block_number, error_code, error_message = read_ack(client_socket)
+                if opcode == 4:
+                    if ack_block_number == block_count:
+                        break
+                    else:
+                        build_response(filename, ack_block_number + 1)
+                elif opcode == 5:
+                    # handle error
                     break
                 else:
-                    # check to make sure the block size is less than the normal size
-                    # send block from block number + 1
-            elif opcode == 5:
-                # handle error
-                break
-            else:
-                break
+                    break
+        else:
+            # send error message
+    else:
+        # send error message
+
 
 
     ####################################################
@@ -154,7 +158,10 @@ def read_ack(client_socket):
     return opcode, block_number, error_code, error_message
 
 
-def build_response():
+def build_response(filename, block_number):
+    response = b'\x00\x03' + block_number.encode('ASCII') + get_file_block(filename, block_number)
+    return response
+
 
 """
 Read request line
