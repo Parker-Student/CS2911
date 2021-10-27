@@ -46,7 +46,7 @@ def main():
     #   functions as needed                            #
     ####################################################
 
-    # Read request line
+    opcode, filename, mode = read_request_line(client_socket)
     # get the proper file
     # build response message
     # send response back to user
@@ -117,8 +117,43 @@ def socket_setup():
 # Write additional helper functions starting here  #
 ####################################################
 
-def read_request_line():
+def next_byte(data_socket):
+    """
+    Read the next byte from the socket data_socket.
 
+    Read the next byte from the sender, received over the network.
+    If the byte has not yet arrived, this method blocks (waits)
+    until the byte arrives.
+    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
+
+    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
+                            data connection (either a client socket or a server data socket), not a tcp
+                            server's listening socket.
+    :return: the next byte, as a bytes object with a single byte in it
+    """
+    return data_socket.recv(1)
+
+
+def read_request_line(client_socket):
+    opcode = read_opcode(client_socket)
+    filename = read_until_zero(client_socket)
+    mode = read_until_zero(client_socket)
+    return opcode, filename, mode
+
+
+def read_opcode(client_socket):
+    return next_byte(client_socket) + next_byte(client_socket)
+
+
+def read_until_zero(client_socket):
+    data = b''
+    while True:
+        new_byte = next_byte(client_socket)
+        if new_byte == b'00':
+            break
+        else:
+            data += new_byte
+    return data
 
 """
 Read request line
