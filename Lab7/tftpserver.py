@@ -47,9 +47,22 @@ def main():
     ####################################################
 
     opcode, filename, mode = read_request_line(client_socket)
-    # get the proper file
-    # build response message
-    # send response back to user
+    block_count = get_file_block_count(filename)
+    if block_count != -1:
+        # send block 1
+        while True:
+            opcode, ack_block_number, error_code, error_message = read_ack(client_socket)
+            if opcode == 4:
+                if ack_block_number == block_count:
+                    break
+                else:
+                    # send block from block number + 1
+            elif opcode == 5:
+                # handle error
+                break
+            else:
+                break
+
 
     ####################################################
     # Your code ends here                              #
@@ -117,43 +130,28 @@ def socket_setup():
 # Write additional helper functions starting here  #
 ####################################################
 
-def next_byte(data_socket):
-    """
-    Read the next byte from the socket data_socket.
-
-    Read the next byte from the sender, received over the network.
-    If the byte has not yet arrived, this method blocks (waits)
-    until the byte arrives.
-    If the sender is done sending and is waiting for your response, this method blocks indefinitely.
-
-    :param data_socket: The socket to read from. The data_socket argument should be an open tcp
-                            data connection (either a client socket or a server data socket), not a tcp
-                            server's listening socket.
-    :return: the next byte, as a bytes object with a single byte in it
-    """
-    return data_socket.recv(1)
+def next_stream(client_socket):
+    return client_socket.recvfrom(MAX_UDP_PACKET_SIZE)
 
 
 def read_request_line(client_socket):
-    opcode = read_opcode(client_socket)
-    filename = read_until_zero(client_socket)
-    mode = read_until_zero(client_socket)
+    stream = next_stream(client_socket)
+    opcode =
+    filename =
+    mode =
     return opcode, filename, mode
 
 
-def read_opcode(client_socket):
-    return next_byte(client_socket) + next_byte(client_socket)
+def read_ack(client_socket):
+    stream = next_stream(client_socket)
+    opcode =
+    block_number =
+    error_code =
+    error_message =
+    return opcode, block_number, error_code, error_message
 
 
-def read_until_zero(client_socket):
-    data = b''
-    while True:
-        new_byte = next_byte(client_socket)
-        if new_byte == b'00':
-            break
-        else:
-            data += new_byte
-    return data
+def build_response():
 
 """
 Read request line
