@@ -47,7 +47,9 @@ def main():
     ####################################################
 
     opcode, filename, mode = read_request_line(client_socket)
+    # check the opcode
     block_count = get_file_block_count(filename)
+    # if not valid send invalid file message
     if block_count != -1:
         # send block 1
         while True:
@@ -56,6 +58,7 @@ def main():
                 if ack_block_number == block_count:
                     break
                 else:
+                    # check to make sure the block size is less than the normal size
                     # send block from block number + 1
             elif opcode == 5:
                 # handle error
@@ -130,12 +133,12 @@ def socket_setup():
 # Write additional helper functions starting here  #
 ####################################################
 
-def next_stream(client_socket):
+def next_message(client_socket):
     return client_socket.recvfrom(MAX_UDP_PACKET_SIZE)
 
 
 def read_request_line(client_socket):
-    stream = next_stream(client_socket)
+    message = next_message(client_socket)
     opcode =
     filename =
     mode =
@@ -143,7 +146,7 @@ def read_request_line(client_socket):
 
 
 def read_ack(client_socket):
-    stream = next_stream(client_socket)
+    message = next_message(client_socket)
     opcode =
     block_number =
     error_code =
