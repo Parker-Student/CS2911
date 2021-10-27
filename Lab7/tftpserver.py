@@ -46,6 +46,10 @@ def main():
     #   functions as needed                            #
     ####################################################
 
+    # Read request line
+    # get the proper file
+    # build response message
+    # send response back to user
 
     ####################################################
     # Your code ends here                              #
@@ -113,15 +117,18 @@ def socket_setup():
 # Write additional helper functions starting here  #
 ####################################################
 
+def read_request_line():
+
+
 """
+Read request line
+    # get the proper file
+    # build response message
+    # send response back to user
 What We Need To Do:
 Build messages
 Send messages
 Read from client
 Parse Message
-Complete Exercise
-
-
-
 """
 main()
