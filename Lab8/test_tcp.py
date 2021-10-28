@@ -15,8 +15,8 @@ NUM_BLOCKS = 10000
 BLOCK_SIZE = 1000
 
 # Receiver options
-PRINT_RESPONSE = False # Print each byte?
-DO_WAIT = False # Wait between each byte?
+PRINT_RESPONSE = True # Print each byte?
+DO_WAIT = True # Wait between each byte?
 WAIT_SECONDS = 1
 
 def main():
