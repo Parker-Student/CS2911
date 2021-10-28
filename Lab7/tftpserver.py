@@ -8,16 +8,21 @@
 A Trivial File Transfer Protocol Server
 
 Introduction: (Describe the lab in your own words)
-
+The goal of this lab is to utilize the TFTP protocol to send files to a client while acting as a server.
+This includes:
+    Handling TFTP requests from the client
+    Parsing the requests
+    Returning the block associated with the request
+Other important things to account for is error handling and bad requests.
 
 
 
 Summary: (Summarize your experience with the lab, what you learned, what you liked,what you disliked, and any suggestions you have for improvement)
-
-
-
-
-
+Overall the lab was pretty neat!
+Learning that receiving a message from a socket gives you the address is big.
+We had some issues when sending over localhost. Some clarification in the FAQ could be beneficial
+We really enjoyed the accomplished feeling of seeing the files transfered
+Having a lot of the code pre-written allows us to spend more time understanding the concepts that are important for this lab.
 """
 
 # import modules -- not using "from socket import *" in order to selectively use items with "socket." prefix
