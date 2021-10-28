@@ -137,10 +137,22 @@ def socket_setup():
 ####################################################
 
 def next_message(client_socket):
+    """
+    Receives the next message on the socket
+    :param client_socket:
+    :return: message
+    :author: Aidan Waterman
+    """
     return client_socket.recvfrom(MAX_UDP_PACKET_SIZE)
 
 
 def read_request_line(client_socket):
+    """
+    Parses the request line of the message
+    :param client_socket:
+    :return: opcode, filename, mode, and address
+    :author: Parker Foord
+    """
     message, address = next_message(client_socket)
     opcode = message[0: 2]
     message = str(message.split(opcode)[1])
@@ -152,6 +164,12 @@ def read_request_line(client_socket):
 
 
 def read_ack(client_socket):
+    """
+    Parses the acknowledgement message
+    :param client_socket:
+    :return: opcode, block number recieved, error code, error message
+    :author: Aidan Waterman
+    """
     message = next_message(client_socket)[0]
     block_number = 0
     error_code = -1
@@ -169,11 +187,25 @@ def read_ack(client_socket):
 
 
 def build_response(filename, block_number):
+    """
+    Builds a data response to send the user
+    :param filename:
+    :param block_number:
+    :return: message to send
+    :author: Aidan Waterman
+    """
     response = b'\x00\x03' + block_number.to_bytes(2, 'big') + get_file_block(filename, block_number)
     return response
 
 
 def build_error(errorcode, message):
+    """
+    Builds an error response to send the user
+    :param errorcode:
+    :param message:
+    :return: message to send
+    :author: Parker Foord
+    """
     response = b'\x00\x05' + errorcode + message.encode('ASCII') + b'\x20'
     return response
 
