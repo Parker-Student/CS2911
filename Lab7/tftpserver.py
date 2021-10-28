@@ -50,24 +50,23 @@ def main():
     if opcode == 1:
         block_count = get_file_block_count(filename)
         if block_count != -1:
-            # send block 1
-            build_response(filename, 1)
+            client_socket.sendto(build_response(filename, 1), ('localhost', TFTP_PORT))
             while True:
                 opcode, ack_block_number, error_code, error_message = read_ack(client_socket)
                 if opcode == 4:
                     if ack_block_number == block_count:
                         break
                     else:
-                        build_response(filename, ack_block_number + 1)
+                        client_socket.sendto(build_response(filename, ack_block_number + 1), ('localhost', TFTP_PORT))
                 elif opcode == 5:
-                    # handle error
+                    print(error_code + " error: " + error_message)
                     break
                 else:
                     break
         else:
-            # send error message
+            client_socket.sendto(build_error(b'\x00\x01', "File not found"), ('localhost', TFTP_PORT))
     else:
-        # send error message
+        client_socket.sendto(build_error(b'\x00\x04', "Only file reading currently supported"), ('localhost', TFTP_PORT))
 
 
 
@@ -143,18 +142,24 @@ def next_message(client_socket):
 
 def read_request_line(client_socket):
     message = next_message(client_socket)
-    opcode =
-    filename =
-    mode =
+    opcode = message.index(0, 1)
+    parsed = str.split(str(b'\x00'))
+    filename = parsed.index(1)
+    mode = parsed.index(2)
     return opcode, filename, mode
 
 
 def read_ack(client_socket):
     message = next_message(client_socket)
-    opcode =
-    block_number =
-    error_code =
-    error_message =
+    block_number = -1
+    error_code = -1
+    error_message = -1
+    opcode = message.index(0,1)
+    if opcode.from_bytes() == 4:
+        block_number = message(2,3)
+    elif opcode.from_bytes() == 5:
+        error_code = message(2,3)
+        error_message = message.index(4, (message.count()-1))
     return opcode, block_number, error_code, error_message
 
 
@@ -163,15 +168,8 @@ def build_response(filename, block_number):
     return response
 
 
-"""
-Read request line
-    # get the proper file
-    # build response message
-    # send response back to user
-What We Need To Do:
-Build messages
-Send messages
-Read from client
-Parse Message
-"""
+def build_error(errorcode, message):
+    response = b'\x00\x05' + errorcode + message.encode('ASCII') + b'\x20'
+    return response
+
 main()
