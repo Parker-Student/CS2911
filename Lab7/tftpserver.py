@@ -46,27 +46,27 @@ def main():
     #   functions as needed                            #
     ####################################################
 
-    opcode, filename, mode = read_request_line(client_socket)
+    opcode, filename, mode, address = read_request_line(client_socket)
     if opcode == 1:
         block_count = get_file_block_count(filename)
         if block_count != -1:
-            client_socket.sendto(build_response(filename, 1), ('localhost', TFTP_PORT))
+            client_socket.sendto(build_response(filename, 1), address)
             while True:
                 opcode, ack_block_number, error_code, error_message = read_ack(client_socket)
                 if opcode == 4:
                     if ack_block_number == block_count:
                         break
                     else:
-                        client_socket.sendto(build_response(filename, ack_block_number + 1), ('localhost', TFTP_PORT))
+                        next_block = ack_block_number + 1
+                        print(ack_block_number)
+                        client_socket.sendto(build_response(filename, next_block), address)
                 elif opcode == 5:
                     print(error_code + " error: " + error_message)
                     break
-                else:
-                    break
         else:
-            client_socket.sendto(build_error(b'\x00\x01', "File not found"), ('localhost', TFTP_PORT))
+            client_socket.sendto(build_error(b'\x00\x01', "File not found"), address)
     else:
-        client_socket.sendto(build_error(b'\x00\x04', "Only file reading currently supported"), ('localhost', TFTP_PORT))
+        client_socket.sendto(build_error(b'\x00\x04', "Only file reading currently supported"), address)
 
 
 
@@ -141,30 +141,35 @@ def next_message(client_socket):
 
 
 def read_request_line(client_socket):
-    message = next_message(client_socket)
-    opcode = message.index(0, 1)
-    parsed = str.split(str(b'\x00'))
-    filename = parsed.index(1)
-    mode = parsed.index(2)
-    return opcode, filename, mode
+    message, address = next_message(client_socket)
+    opcode = message[0: 2]
+    message = str(message.split(opcode)[1])
+    opcode = int.from_bytes(opcode, 'big')
+    parsed = message.split("\\x00")
+    filename = parsed[0].removeprefix("b'")
+    mode = parsed[1]
+    return opcode, filename, mode, address
 
 
 def read_ack(client_socket):
-    message = next_message(client_socket)
-    block_number = -1
+    message = next_message(client_socket)[0]
+    block_number = 0
     error_code = -1
     error_message = -1
-    opcode = message.index(0,1)
-    if opcode.from_bytes() == 4:
-        block_number = message(2,3)
-    elif opcode.from_bytes() == 5:
-        error_code = message(2,3)
-        error_message = message.index(4, (message.count()-1))
-    return opcode, block_number, error_code, error_message
+    opcode = message[0: 2]
+    if int.from_bytes(opcode, 'big') == 4:
+        block_number = message.split(opcode)[1]
+        if block_number == b'':
+            block_number = b'\x00\x04'
+    elif int.from_bytes(opcode, 'big') == 5:
+        error_code = message[2: 4]
+        split_code = opcode + error_code
+        error_message = str(message.split(split_code)[1])
+    return int.from_bytes(opcode, 'big'), int.from_bytes(block_number, 'big'), error_code, error_message
 
 
 def build_response(filename, block_number):
-    response = b'\x00\x03' + block_number.encode('ASCII') + get_file_block(filename, block_number)
+    response = b'\x00\x03' + block_number.to_bytes(2, 'big') + get_file_block(filename, block_number)
     return response
 
 
