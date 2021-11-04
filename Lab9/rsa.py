@@ -2,14 +2,13 @@
 - CS2911 - 0NN
 - Fall 2020
 - Lab 9
-- Names:
+- Names: Parker Foord, Aidan H2Oman
   - 
   -
 
 16-bit RSA
 
 Introduction: (Describe the lab in your own words)
-
 
 
 
@@ -41,11 +40,13 @@ Summary: (Summarize your experience with the lab, what you learned, what you lik
 
 
 """
-
+import math
 import random
 import sys
 
 # Use these named constants as you write your code
+from functools import reduce
+
 MAX_PRIME = 0b11111111  # The maximum value a prime number can have
 MIN_PRIME = 0b11000001  # The minimum value a prime number can have 
 PUBLIC_EXPONENT = 17  # The default public exponent
@@ -53,7 +54,6 @@ PUBLIC_EXPONENT = 17  # The default public exponent
 
 def main():
     """ Provide the user with a variety of encryption-related actions """
-
     # Get chosen operation from the user.
     action = input("Select an option from the menu below:\n"
                    "(1-CK) create_keys\n"
@@ -145,7 +145,7 @@ def encrypt_message_interactive():
     print("Encrypted message:", encrypted)
 
 
-def decrypt_message_interactive(priv = None):
+def decrypt_message_interactive(priv=None):
     """
     Decrypt a message
     """
@@ -284,6 +284,46 @@ def break_key(pub):
 
 # Your code and additional functions go here. (Replace this line.)
 
+#def prime_factors(n):
+ #   factors_set = factors(n)
+  #  while
+   # factors_set.pop()
+
+
+
+def factors(n):
+    return set(reduce(list.__add__,
+                ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0)))
+
+
+def is_prime(n):
+    if n % 2 == 0 and n > 2:
+        return False
+    return all(n % i for i in range(3, int(math.sqrt(n)) + 1, 2))
+
+
+def find_d(z, e):
+    for i in range(z):
+        value = e * i
+        if value % z == 1:
+            return i
+
+
+def prime_factors(n):
+    i = 2
+    factors = []
+    while i * i <= n:
+        if n % i:
+            i += 1
+        else:
+            n //= i
+            factors.append(i)
+    if n > 1:
+        factors.append(n)
+    return factors
+
+
+
 # ---------------------------------------
 # Do not modify code below this line
 # ---------------------------------------
@@ -311,6 +351,7 @@ def get_private_key(key_pair):
     """
 
     return (key_pair[1], key_pair[2])
+
 
 
 main()
