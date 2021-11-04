@@ -248,8 +248,23 @@ def create_keys():
 
     :return: the keys as a three-tuple: (e,d,n)
     """
-
-    pass  # Delete this line and complete this method
+    e = 17
+    p = random.randint(0, 255)
+    q = random.randint(0, 255)
+    # make valid p
+    while not is_prime(p) or (p - 1) % e == 0:
+        p = random.randint(0, 255)
+    # make valid q
+    while not is_prime(q) or (q - 1) % e == 0:
+        q = random.randint(0, 255)
+    print(p, q)
+    # set n value
+    n = p * q
+    # set z value
+    z = (p - 1) * (q - 1)
+    # set d value
+    d = find_d(z, e)
+    return (e, d, n)
 
 
 def apply_key(key, m):
@@ -264,8 +279,8 @@ def apply_key(key, m):
              if given the public key and a message, encrypts the message
              and returns the ciphertext.
     """
-
-    pass  # Delete this line and complete this method
+    (exponent, modulo) = key
+    return pow(m, exponent, modulo)
 
 
 def break_key(pub):
@@ -279,7 +294,13 @@ def break_key(pub):
     :param pub: a tuple containing the public key (e,n)
     :return: a tuple containing the private key (d,n)
     """
-    pass  # Delete this line and complete this method
+    (e, n) = pub
+    (p, q) = prime_factors(n)
+    z = (p - 1) * (q - 1)
+    d = find_d(z, e)
+    private_key = (d, n)
+    print(private_key)
+    return private_key
 
 
 # Your code and additional functions go here. (Replace this line.)
@@ -351,7 +372,6 @@ def get_private_key(key_pair):
     """
 
     return (key_pair[1], key_pair[2])
-
 
 
 main()
