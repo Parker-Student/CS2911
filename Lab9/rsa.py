@@ -10,20 +10,20 @@
 
 Introduction: (Describe the lab in your own words)
 
-
+In this lab we wrote functions that made public/private key pairs, encrypted a message using the public key, and calculated the private key when only given the public key.
 
 
 Question 1: RSA Security
 In this lab, Trudy is able to find the private key from the public key. Why is this not a problem for RSA in practice?
 
-
+This is not a problem in practice because RSA is designed to take long enough to crack that by the time Trudy would be able to decode the message, the information in the message is no longer valuable.
 
 
 
 Question 2: Critical Step(s)
 When creating a key, Bob follows certain steps. Trudy follows other steps to break a key. What is the difference between Bob’s steps and Trudy’s so that Bob is able to run his steps on large numbers, but Trudy cannot run her steps on large numbers?
 
-
+Bob's steps have many possible configurations, this is because the requirements to make a public/private key pair are not extremely strict. Trudy's steps are not significantly more complex than Bob's from a mathmatical standpoint, but there is only one possible solution so this takes significantly longer to calculate.
 
 
 Checksum Activity:
